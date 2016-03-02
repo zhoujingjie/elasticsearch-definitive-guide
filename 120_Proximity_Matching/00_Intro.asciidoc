@@ -1,38 +1,25 @@
-[[proximity-matching]]
-== Proximity Matching
+[[近似匹配]]
+== 近似匹配
 
-Standard full-text search with TF/IDF treats documents, or at least each field
-within a document, as a big _bag of words_.((("proximity matching")))  The `match` query can tell us whether
-that bag contains our search terms, but that is only part of the story.
-It can't tell us anything about the relationship between words.
+经TF/IDF处理后文档的标准全文搜索，或者仅仅是一个包含了全部字段的文档，就像一个装满了分词的袋子。匹配查询可以告诉我们这个袋子里面是否包含了我们的搜索搜索项，但却不能告诉我们这些词之间关系上的任何信息。
 
-Consider the difference between these sentences:
+思考下面这几个句子的不同：
 
-* Sue ate the alligator.
-* The alligator ate Sue.
-* Sue never goes anywhere without her alligator-skin purse.
+* 苏吃了鳄鱼
+* 鳄鱼吃了苏
+* 苏到哪都带着她的鳄鱼皮钱包
 
-A `match` query for `sue alligator` would match all three documents, but it
-doesn't tell us whether the two words form part of the same idea, or even the same
-paragraph.
+对于“苏，鳄鱼”的查询将匹配上面三个文档，但它却不能确定这两个词是否只来自于一种语境，甚至都不能确定是否来自于同一个段落。
 
-Understanding how words relate to each other is a complicated problem, and
-we can't solve it by just using another type of query,
-but we can at least find words that appear to be related because they appear
-near each other or even right next to each other.
+想搞清楚每个分词之间的关系是一件非常困难的事情，我们也无法通过换一种查询方式去解决。但我们至少可以通过出现在彼此附近或者仅仅是彼此相邻的分词来判断一些似乎相关的分词。
 
-Each document may be much longer than the examples we have presented: `Sue`
-and `alligator` may be separated by paragraphs of other text. Perhaps we still
-want to return these documents in which the words are widely separated, but we
-want to give documents in which the words are close together a higher relevance
-score.
+每个文档可能都比我们上面这个例子要长：“苏”和“鳄鱼”这两个词可能会分散在其他的段落文字中，我们可能会希望得到尽可能包含这两个词的文档，但我们也同样需要这些文档与分词有很高的相关度。
 
-This is the province of _phrase matching_, or _proximity matching_.
+这就是我们要介绍的短语匹配或者近似匹配。
 
-[TIP]
+[注]
 ==================================================
 
-In this chapter, we are using the same example documents that we used for
-the <<match-test-data,`match` query>>.
+在这一章节，我们还是使用在<<match-test-data,`匹配` 查询>>中使用过的文档作为例子。
 
 ==================================================
