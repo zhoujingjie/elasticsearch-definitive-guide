@@ -2,7 +2,7 @@
 <!DOCTYPE HTML>
 <html lang="en-us">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>堆内存:大小和交换</title><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="Elasticsearch: The Definitive Guide" /><link rel="up" href="deploy.html" title="Production Deployment" /><link rel="prev" href="_不要触碰这些配置.html" title="不要触碰这些配置！" /><link rel="next" href="_file_descriptors_and_mmap.html" title="File Descriptors and MMap" /><meta name="DC.type" content="Docs/" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>堆内存:大小和交换</title><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="Elasticsearch: The Definitive Guide" /><link rel="up" href="deploy.html" title="Production Deployment" /><link rel="prev" href="dont-touch-these-configs.html" title="不要触碰这些配置！" /><link rel="next" href="_file_descriptors_and_mmap.html" title="File Descriptors and MMap" /><meta name="DC.type" content="Docs/" />
   
  	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 
@@ -990,7 +990,7 @@
 <section id="guide">
 
             <!-- start body -->
-<div class="page_header"><b>PLEASE NOTE:</b><br/>We are working on updating this book for the latest version. Some content might be out of date.</div><div class="breadcrumbs"><span class="breadcrumb-link"><a href="index.html">Elasticsearch: The Definitive Guide</a></span> » <span class="breadcrumb-link"><a href="administration.html">Administration, Monitoring, and Deployment </a></span> » <span class="breadcrumb-link"><a href="deploy.html">Production Deployment</a></span> » <span class="breadcrumb-node">堆内存:大小和交换</span></div><div class="navheader"><span class="prev"><a href="_不要触碰这些配置.html">
+<div class="page_header"><b>PLEASE NOTE:</b><br/>We are working on updating this book for the latest version. Some content might be out of date.</div><div class="breadcrumbs"><span class="breadcrumb-link"><a href="index.html">Elasticsearch: The Definitive Guide</a></span> » <span class="breadcrumb-link"><a href="administration.html">Administration, Monitoring, and Deployment </a></span> » <span class="breadcrumb-link"><a href="deploy.html">Production Deployment</a></span> » <span class="breadcrumb-node">堆内存:大小和交换</span></div><div class="navheader"><span class="prev"><a href="dont-touch-these-configs.html">
               « 
               不要触碰这些配置！</a>
            
@@ -1058,7 +1058,7 @@ $ JAVA_HOME=`/usr/libexec/java_home -v 1.8` java -Xmx32767m -XX:+PrintFlagsFinal
 这可以预防正常情况下发生交换，但仍允许操作系统在紧急情况下发生交换。</p><p>对于大部分Linux操作系统，可以在 <code class="literal">sysctl</code> 中这样配置：</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-bash">vm.swappiness = 1 <a id="CO307-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span></pre></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO307-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
 <code class="literal">swappiness</code> 设置为 <code class="literal">1</code> 比设置为 <code class="literal">0</code> 要好，因为在一些内核版本 <code class="literal">swappiness</code> 设置为 <code class="literal">0</code> 会触发系统 OOM-killer（注：Linux 内核的 Out of Memory（OOM）killer 机制）。
 </p></td></tr></table></div><p>最后，如果上面的方法都不合适，你需要打开配置文件中的 <code class="literal">mlockall</code> 开关。
-它的作用就是允许 JVM 锁住内存，禁止操作系统交换出去。在你的 <code class="literal">elasticsearch.yml</code> 文件中，设置如下：</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-yaml">bootstrap.mlockall: true</pre></div></div></div><div class="navfooter"><span class="prev"><a href="_不要触碰这些配置.html">
+它的作用就是允许 JVM 锁住内存，禁止操作系统交换出去。在你的 <code class="literal">elasticsearch.yml</code> 文件中，设置如下：</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-yaml">bootstrap.mlockall: true</pre></div></div></div><div class="navfooter"><span class="prev"><a href="dont-touch-these-configs.html">
               « 
               不要触碰这些配置！</a>
            
