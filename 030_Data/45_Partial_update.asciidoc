@@ -1,26 +1,11 @@
 [[partial-updates]]
-=== Partial Updates to Documents
+=== 更新部分文档
 
-In <<update-doc>>, we said that ((("updating documents", "partial updates")))((("documents", "partial updates")))the way to update a document is to retrieve
-it, change it, and then reindex the whole document. This is true. However, using
-the `update` API, we can make partial updates like incrementing a counter in a
-single request.
+在 <<update-doc>>中, 我们说 ((("updating documents", "partial updates")))((("documents", "partial updates")))更新一个文档的方法是检索并且改变它。然后重新索引整个文档，这是真的。然而，使用 `update` API 我们能更新部分文档，比如单个请求中的计数器增加。
 
-We also said that documents are immutable: they cannot be changed, only
-replaced.  The `update` API _must_ obey the same rules.  Externally, it
-appears as though we are partially updating a document in place. Internally,
-however, the `update` API simply manages the same _retrieve-change-reindex_
-process that we have already described. The difference is that this process
-happens within a shard, thus avoiding the network overhead of multiple
-requests. By reducing the time between the _retrieve_ and _reindex_ steps, we
-also reduce the likelihood of there being conflicting changes from other
-processes.
+我们还表示，文件是不可变的，他们不能被改变，只能被替换。该 `update` API 一定要遵守同样的规则。对外，它看起来好像我们部分更新一个文档。然而在内部，该 `update` API 像我们描述的一样简单地管理_检索-改变-重建索引_的处理过程。区别在于这个过程发生在分片内部，这样就避免了多次分步请求的网络负载。通过减少检索和重建索引步骤之间的时间，我们也减少了其他进程的改变带来冲突的可能性。
 
-The simplest form of the `update` request accepts a partial document as the
-`doc` parameter, which just gets merged with the existing document. Objects
-are merged together, existing scalar fields are overwritten, and new fields are
-added. For instance, we could add a `tags` field and a `views` field to our
-blog post as follows:
+ `update` 请求最简单的一种形式是接收一个部分的文档作为 `doc` 的参数，它只是获取与现有文档的合并：将对象合并到一起，覆盖现有的字段，增加新的字段。例如，我们增加字段 `tags` `views` 到我们的博客文章，如下所示：
 
 [source,js]
 --------------------------------------------------
@@ -34,8 +19,7 @@ POST /website/blog/1/_update
 --------------------------------------------------
 // SENSE: 030_Data/45_Partial_update.json
 
-If the request succeeds, we see a response similar to that
-of the `index` request:
+如果请求成功，我们看到类似于 `index` 请求的响应：
 
 [source,js]
 --------------------------------------------------
@@ -47,7 +31,7 @@ of the `index` request:
 }
 --------------------------------------------------
 
-Retrieving the document shows the updated `_source` field:
+检索文件显示更新了 `_source` 字段：
 
 [source,js]
 --------------------------------------------------
@@ -67,15 +51,11 @@ Retrieving the document shows the updated `_source` field:
 --------------------------------------------------
 // SENSE: 030_Data/45_Partial_update.json
 
-<1> Our new fields have been added to the `_source`.
+<1> 新字段添加到 `_source` 。
 
-==== Using Scripts to Make Partial Updates
+==== 使用脚本进行更新部分文档
 
-
-Scripts can be used in the `update` API to change the contents of the `_source`
-field, which ((("_source field", sortas="source field")))is referred to inside an update script as `ctx._source`. For
-instance, we could use a script to increment the number of `views` that our
-blog post has had:
+脚本可以在 `update` API中用来改变 `_source` 的内容字段，它((("_source field", sortas="source field")))被称为内部的更新脚本如 `ctx._source` 。 例如，我们可以使用脚本来增加博客文章已经有的 `views` 数量：
 
 [source,js]
 --------------------------------------------------
@@ -89,47 +69,26 @@ POST /website/blog/1/_update
 .Scripting with Groovy
 ****
 
-For those ((("documents", "partial updates", "using scripts")))((("updating documents", "partial updates", "using scripts")))moments when the API just isn't enough, Elasticsearch allows you to
-write your own custom logic in a script.((("scripts", "using to make partial updates"))) Scripting is supported in many APIs
-including search, sorting, aggregations, and document updates. Scripts can be passed in as part of the request,
-retrieved from the special .scripts index, or loaded from disk.
+对于那些 ((("documents", "partial updates", "using scripts")))((("updating documents", "partial updates", "using scripts"))) API 不能满足需求的情况，Elasticsearch 允许你使用脚本编写自定义的逻辑。((("scripts", "using to make partial updates")))许多的API中都支持脚本的使用，包括搜索、排序、聚合和文档更新。脚本可以作为请求的一部分被传递和从特殊.scripts索引中被检索，或者从磁盘加载。
 
-The default scripting language ((("Groovy")))is http://groovy.codehaus.org/[Groovy], a
-fast and expressive scripting language, similar in syntax to JavaScript. It was first introduced
-in Elasticsearch version v1.3.0 and it runs in a _sandbox_, however there is vulnerability
-in the Groovy scripting engine that allows an attacker to construct
-Groovy scripts that escape the sandbox and execute shell commands as the user
-running the Elasticsearch Java VM.
+默认脚本语言 ((("Groovy")))http://groovy.codehaus.org/[Groovy]，是一个速度很快且非常有表现力的脚本语言，在语法上与 JavaScript 相似。它在 Elasticsearch V1.3.0 版本首次引入，运行在沙箱中，但是在 Groovy 脚本引擎中有漏洞存在，它允许攻击者构建逃脱沙箱的 Groovy 脚本并作为用户执行 shell 命令运行 Elasticsearch Java 虚拟机。
 
-Therefore in versions v1.3.8, v1.4.3, and version v1.5.0 and newer it has been disabled by default.
-Alternatively you can disable dynamic Groovy scripts by
-adding this setting to the `config/elasticsearch.yml` file in all nodes in the
-cluster:
+因此，在版本 v1.3.8，1.4.3和版本 V1.5.0，以及以上的版本，它已经被默认禁用。另外，您可以通过设置集群中的所有节点的 `config/elasticsearch.yml` 文件来禁用动态 Groovy 脚本：
 
 [source,yaml]
 -----------------------------------
 script.groovy.sandbox.enabled: false
 -----------------------------------
 
-This will turn off the Groovy sandbox, thus preventing dynamic Groovy scripts
-from being accepted as part of a request or retrieved from the special
-`.scripts` index. You will still be able to use Groovy scripts stored in files
-in the `config/scripts/` directory on every node.
+这将关闭 Groovy 沙箱，从而防止动态 Groovy 脚本作为请求的一部分被接受，或者从特殊的 `.scripts` 索引中被检索。当然，你仍然可以使用存储在每个节点的 `config/scripts/` 目录下的 Groovy 脚本。
 
-If your architecture and security is one that does not need worry about the vulnerability,
-for example your Elasticsearch endpoints are only exposed and available to trusted applications,
-then you can choose to re-enable the dynamic scripting if it is a feature your application needs.
+如果你的架构和安全性不需要担心漏洞攻击，例如你的 Elasticsearch 端点仅暴露给并且只有可信赖的应用可获得，并且需要脚本实现功能你就可以选择重新启用动态脚本。
 
-You can read more about scripting in the
-{ref}/modules-scripting.html[scripting reference documentation].
+你可以在 {ref}/modules-scripting.html[scripting reference documentation]获得更多关于脚本的信息.
 
 ****
 
-We can also use a script to add a new tag to the `tags` array.  In this
-example we specify the new tag as a parameter rather than hardcoding it in
-the script itself. This allows Elasticsearch to reuse the script in the
-future, without having to compile a new script every time we want to add
-another tag:
+我们还可以用脚本添加一个新标签到 `tags` 数组。在这个例子中我们指定新的标签作为参数，而不是硬编码到脚本内部。这使得 Elasticsearch 可以重用这个脚本，而不是每次我们想添加标签时都要修改它并重新编译：
 
 [source,js]
 --------------------------------------------------
@@ -144,7 +103,7 @@ POST /website/blog/1/_update
 // SENSE: 030_Data/45_Partial_update.json
 
 
-Fetching the document shows the effect of the last two requests:
+获取文档显示最后两次请求的效果：
 
 [source,js]
 --------------------------------------------------
@@ -162,11 +121,10 @@ Fetching the document shows the effect of the last two requests:
    }
 }
 --------------------------------------------------
-<1> The `search` tag has been appended to the `tags` array.
-<2> The `views` field has been incremented.
+<1> 该 `search` 标签已追加到 `tags` 数组。
+<2> 该 `views` 字段已被递增。
 
-We can even choose to delete a document based on its contents,
-by setting `ctx.op` to `delete`:
+我们甚至可以选择基于它的内容删除文档，通过设置 `ctx.op` 为 `delete` ：
 
 [source,js]
 --------------------------------------------------
@@ -180,15 +138,11 @@ POST /website/blog/1/_update
 --------------------------------------------------
 // SENSE: 030_Data/45_Partial_update.json
 
-==== Updating a Document That May Not Yet Exist
+==== 更新的文档可能还未创建
 
-Imagine that we need to store a((("updating documents", "that don&#x27;t already exist"))) page view counter in Elasticsearch. Every time
-that a user views a page, we increment the counter for that page.  But if it
-is a new page, we can't be sure that the counter already exists. If we try to
-update a nonexistent document, the update will fail.
+试想一下，我们需要存储((("updating documents", "that don&#x27;t already exist")))Elasticsearch 中的页面视图计数器。 每次有用户浏览网页，我们增加该页面的计数器。但是，如果它是一个新网页，我们不能确定计数器已经存在。如果我们尝试更新一个不存在的文档，那么更新操作将会失败。
 
-In cases like these, we can use((("upsert parameter"))) the `upsert` parameter to specify the
-document that should be created if it doesn't already exist:
+在这样的情况下，我们可以使用((("upsert parameter"))) `upsert` 参数指定，如果文档不存在，应该先创建它：
 
 [source,js]
 --------------------------------------------------
@@ -202,32 +156,18 @@ POST /website/pageviews/1/_update
 --------------------------------------------------
 // SENSE: 030_Data/45_Upsert.json
 
-The first time we run this request, the `upsert` value is indexed as a new
-document, which  initializes the `views` field to `1`. On subsequent runs, the
-document already exists, so the `script` update is applied instead,
-incrementing the `views` counter.
 
-==== Updates and Conflicts
+我们第一次运行这个请求， `upsert` 值作为新文档建立索引，初始化 `views` 字段为 `1` 。在随后的运行中，该文档已经存在，所以 `script` 应用更新，递增 `views` 计数器。
 
-In the introduction to this section, we said((("updating documents", "conflicts and")))((("conflicts", "updates and"))) that the smaller the window between
-the _retrieve_ and _reindex_ steps, the smaller the opportunity for
-conflicting changes. But it doesn't eliminate the possibility completely. It
-is still possible that a request from another process could change the
-document before `update` has managed to reindex it.
+==== 更新和冲突
 
-To avoid losing data, the `update` API retrieves the current `_version`
-of the document in the _retrieve_ step, and passes that to the `index` request
-during the _reindex_ step.
-If another process has changed the document between retrieve and reindex,
-then the `_version` number won't match and the update request will fail.
+在前面介绍这一部分时，我们说((("updating documents", "conflicts and")))((("conflicts", "updates and"))) 检索和重建索引的间隔越小，更改冲突的机会越小。但是它并不能完全消除冲突的可能性。 因为在执行检索之后 `update` 重建索引前，来自另外一个进程更改这个文档的请求很可能就会发生。
 
-For many uses of partial update, it doesn't matter that a document has been
-changed.  For instance, if two processes are both incrementing the page-view counter, it doesn't matter in which order it happens; if a conflict
-occurs, the only thing we need to do is reattempt the update.
+为了避免数据丢失，`update` API 在检索的步骤检索文档当前的 `_version` 版本号，并传递该版本号到重建索引步骤的 `index` 请求。如果另一个进程改变了处于检索和重新索引步骤之间的文档，那么 `_version` 版本号将不匹配，更新请求将会失败。
 
-This can be done automatically by((("query strings", "retry_on_conflict parameter")))((("retry_on_conflict parameter"))) setting the `retry_on_conflict` parameter to
-the number of times that `update` should retry before failing; it defaults
-to `0`.
+对于部分更新的许多使用场景，文档已经被改变也没有关系。例如，如果两个进程都递增页面查看计数器，它们发生的先后顺序其实不太重要，如果冲突发生了，我们需要做的唯一一件事就是尝试再次更新。
+
+这可以通过((("query strings", "retry_on_conflict parameter")))((("retry_on_conflict parameter")))设置参数 `retry_on_conflict` 来自动完成，这个参数规定了失败之前  `update` 应该重试的次数，它的默认值为 `0` 。
 
 [source,js]
 --------------------------------------------------
@@ -240,13 +180,6 @@ POST /website/pageviews/1/_update?retry_on_conflict=5 <1>
 }
 --------------------------------------------------
 // SENSE: 030_Data/45_Upsert.json
-<1> Retry this update five times before failing.
+<1> 失败之前重试该更新5次.
 
-This works well for operations such as incrementing a counter, where the order of
-increments does not matter, but in other situations the order of
-changes _is_ important. Like the <<index-doc,`index` API>>, the `update` API
-adopts a _last-write-wins_ approach by default, but it also accepts a
-`version` parameter that allows you to use
-<<optimistic-concurrency-control,optimistic concurrency control>> to specify
-which version of the document you intend to update.
-
+这非常适用于很多操作比如递增计数器，递增的顺序是不太重要的，但是在其他情况下更改的顺序是非常重要的。像<<index-doc,`index` API>>，该`update` API 默认情况下采用最后一次更新生效的方法，但它也接受 `version` 参数，允许你使用<<optimistic-concurrency-control,optimistic concurrency control>> 指定打算更新的文档的版本。

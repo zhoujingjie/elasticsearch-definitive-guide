@@ -1,10 +1,7 @@
 [[update-doc]]
-=== Updating a Whole Document
+=== 更新整个文档
 
-Documents in Elasticsearch are _immutable_; we cannot change them.((("documents", "updating whole document")))((("updating documents", "whole document"))) Instead, if
-we need to update an existing document, we _reindex_ or replace it,((("reindexing")))((("indexing", seealso="reindexing"))) which we
-can do using the same `index` API that we have already discussed in
-<<index-doc>>.
+在 Elasticsearch 中文档是不可改变的，我们不能使用((("documents", "updating whole document")))((("updating documents", "whole document")))的办法改变他们。相反，如果我们需要更新现有的文档，我们要重建索引或者进行替换。((("reindexing")))((("indexing", seealso="reindexing")))在这里我们使用的 `index` API 和我们已经讨论的<<index-doc>>中的相同.
 
 [source,js]
 --------------------------------------------------
@@ -17,8 +14,7 @@ PUT /website/blog/123
 --------------------------------------------------
 // SENSE: 030_Data/25_Reindex_doc.json
 
-In the response, we can see that Elasticsearch has ((("version number (documents)", "incremented when document replaced")))incremented the `_version`
-number:
+在响应体中，我们能看到 Elasticsearch 已经增加了 `_version` 字段值：
 
 [source,js]
 --------------------------------------------------
@@ -30,24 +26,17 @@ number:
   "created":   false <1>
 }
 --------------------------------------------------
-<1> The `created` flag is((("created flag"))) set to `false` because a document with the same
-    index, type, and ID already existed.
+<1> 该 `created` 标志设置成 `false` ，是因为相同的索引、类型、和 ID 的文档已经存在。
 
-Internally, Elasticsearch has marked the old document as deleted and added an
-entirely new document.((("deleted documents"))) The old version of the document doesn't disappear
-immediately, although you won't be able to access it. Elasticsearch cleans up
-deleted documents in the background as you continue to index more data.
+在内部，Elasticsearch 标志旧文档为已删除，并增加一个全新的文档。((("deleted documents")))尽管你不能再对旧版本的文档进行访问，但是旧版本的文档并不会立即消失，Elasticsearch 会在你继续索引更多的数据时在后台清除标记为删除的文档，以便于为新的索引数据预留更多的资源。
 
-Later in this chapter, we introduce the `update` API, which can be used to
-make <<partial-updates,partial updates to a document>>. This API _appears_ to
-change documents in place, but actually Elasticsearch is following exactly the
-same process as described previously:
+在本章的后面部分，我们会介绍 `update` API, 这个 API 可以被用来做 <<partial-updates,partial updates to a document>>。虽然它是以改变文档的方式展现的，实际上 Elasticsearch 仍然像以前一样，使用相同的几个步骤实现，如下所示：
 
-1. Retrieve the JSON from the old document
-2. Change it
-3. Delete the old document
-4. Index a new document
+1. 从旧文档中检索出特定的 JSON
+2. 更改该 JSON
+3. 删除旧文档
+4. 索引一个新文档
 
-The only difference is that the `update` API achieves this through a single
-client request, instead of requiring separate `get` and `index` requests.
+唯一的区别在于,  `update` API 仅仅通过一个客户端请求来实现这些步骤，而不是单独请求多次 `get` 和 `index` 请求。
+ 
 

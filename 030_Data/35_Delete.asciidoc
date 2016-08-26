@@ -1,8 +1,7 @@
 [[delete-doc]]
-=== Deleting a Document
+=== 删除文档
 
-The syntax for deleting a document((("documents", "deleting"))) follows the same pattern that we have seen
-already, but ((("DELETE method", "deleting documents")))((("HTTP methods", "DELETE")))uses the `DELETE` method :
+删除文档((("documents", "deleting")))的语法与创建文档时模式一致，但是((("DELETE method", "deleting documents")))((("HTTP methods", "DELETE")))使用 `DELETE` 方法进行删除：
 
 [source,js]
 --------------------------------------------------
@@ -10,10 +9,7 @@ DELETE /website/blog/123
 --------------------------------------------------
 // SENSE: 030_Data/35_Delete_doc.json
 
-
-If the document is found, Elasticsearch will return an HTTP response code
-of `200 OK` and a response body like the following. Note that the `_version`
-number has been incremented:
+如果找到该文档，Elasticsearch 将要返回一个 `200 ok` 的 HTTP 响应码，和一个类似以下结构的响应体。注意，字段 `_version` 已经增加:
 
 [source,js]
 --------------------------------------------------
@@ -26,8 +22,7 @@ number has been incremented:
 }
 --------------------------------------------------
 
-If the document isn't((("version number (documents)", "incremented for document not found"))) found, we get a `404 Not Found` response code and
-a body like this:
+如果文档没有找到，我们将会收到 `404 Not Found` 的响应码和类似这样的响应体：
 
 [source,js]
 --------------------------------------------------
@@ -40,13 +35,7 @@ a body like this:
 }
 --------------------------------------------------
 
-Even though the document doesn't exist (`found` is `false`), the
-`_version` number has still been incremented. This is part of the internal
-bookkeeping, which ensures that changes are applied in the correct order
-across multiple nodes.
+即使文档不存在， ` _version` 字段仍然会增加。这是 Elasticsearch 内部记录本的一部分，用来确保这些改变可以在跨多个节点时被应用到，并且以正确的顺序应用。
 
-NOTE: As already mentioned in <<update-doc>>, deleting a document doesn't
-immediately remove the document from disk; it just marks it as deleted.
-Elasticsearch will clean up deleted documents in the background as you
-continue to index more data.
+注意：像以前在<<update-doc>>中提到的一样，删除文档也不会马上将文档从磁盘中删掉，只是做了一个删除的标记。当你不断的索引更多的数据，Elasticsearch 将会在后台清理标记为已删除的文档，以便于在索引新数据时提供资源等支持。
 
