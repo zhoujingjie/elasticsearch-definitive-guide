@@ -1,22 +1,19 @@
-=== Finding Exact Values
+[[_finding_exact_values]]
+=== 查找精确值
 
-When working with exact values,((("structured search", "finding exact values")))((("exact values", "finding")))
-you will be working with non-scoring, filtering queries. Filters are
-important because they are very fast.  They do not calculate
-relevance (avoiding the entire scoring phase) and are easily cached. We'll
-talk about the performance benefits of filters later in <<filter-caching>>,
-but for now, just keep in mind that you should use filtering queries as often as you
-can.
+当进行精确值查找时，((("structured search", "finding exact values")))((("exact values", "finding"))) 我们会使用过滤器（filters）。过滤器
+因为其快而显得重要。过滤器不会计算
+相关度（直接跳过了整个评分阶段）而且很容易对其缓存。我们会
+在本章后面的 <<filter-caching, 过滤器缓存>> 中讨论过滤器的性能优势，
+不过现在只要记住：请尽可能多的使用过滤器。
 
-==== term Query with Numbers
+==== 过滤数字
 
-We are going to explore the `term` query ((("term query", "with numbers")))
-((("structured search", "finding exact values", "using term filter with numbers")))
-first because you will use it often. This query is capable of handling numbers,
-booleans, dates, and text.
+我们首先来看最为常用的 `term` （词项）过滤器，
+可以用它处理数字（numbers）、布尔值（Booleans）、日期（dates）以及文本（text）。
 
-We'll start by indexing some documents representing products, each having a
- `price` and `productID`:
+让我们通过下面一个例子，先对数字（过滤）进行说明。创建并索引一些产品，文档里有字段
+`price` 和 `productID` （ `价格` 和 `产品ID` ）：
 
 [source,js]
 --------------------------------------------------
@@ -32,9 +29,9 @@ POST /my_store/products/_bulk
 --------------------------------------------------
 // SENSE: 080_Structured_Search/05_Term_number.json
 
-Our goal is to find all products with a certain price.  You may be familiar
-with SQL if you are coming from a relational database background.  If we
-expressed this query as an SQL query, it would look like this:
+我们想要做的是查找具有某个价格的所有产品，有
+关系数据库背景的人肯定熟悉 SQL，如果我们
+将其用 SQL 形式表达，会是下面这样：
 
 [source,sql]
 --------------------------------------------------
@@ -43,10 +40,9 @@ FROM   products
 WHERE  price = 20
 --------------------------------------------------
 
-In the Elasticsearch query DSL, we use a `term` query to accomplish the same
-thing.  The `term` query will look for the exact value that we specify.  By
-itself, a `term` query is simple. It accepts a field name and the value
-that we wish to find:
+在 Elasticsearch 的查询表达式（query DSL）中，我们可以使用 `term` 过滤器达到相同的
+目的。 `term` 过滤器会查找我们指定的精确值。作为
+其本身， `term` 过滤器是简单的。它接受一个字段名以及我们希望查找的数值：
 
 [source,js]
 --------------------------------------------------
@@ -57,11 +53,8 @@ that we wish to find:
 }
 --------------------------------------------------
 
-Usually, when looking for an exact value, we don't want to score the query.  We just
-want to include/exclude documents, so we will use a `constant_score` query to execute
-the `term` query in a non-scoring mode and apply a uniform score of one.
-
-The final combination will be a `constant_score` query which contains a `term` query:
+一般来说，当查找某个具体值时，我们不需要对查询进行评分，我们只需要包含或排除文档，所以我们将使用一个 `constant_score` 查询，
+在一个不评分的模式下来执行 `term` 查询，即评分都是一样。
 
 [source,js]
 --------------------------------------------------
@@ -80,12 +73,12 @@ GET /my_store/products/_search
 --------------------------------------------------
 // SENSE: 080_Structured_Search/05_Term_number.json
 
-<1> We use a `constant_score` to convert the `term` query into a filter
-<2>  The `term` query that we saw previously.
+<1> 使用 `constant_score` 查询来转换 `term` 查询以进行过滤。
+<2>  我们之前提过的 `term` 过滤器。
 
-Once executed, the search results from this query are exactly what you would
-expect: only document 2 is returned as a hit (because only `2` had a price
-of `20`):
+尝试执行这个查询，它的搜索结果正如我们
+期望一样：只有 `2` 个文档作为结果返回（因为只有 `2` 个文档的 `price` 字段
+是 `20` ）：
 
 [source,json]
 --------------------------------------------------
@@ -102,16 +95,15 @@ of `20`):
     }
 ]
 --------------------------------------------------
-<1> Queries placed inside the `filter` clause do not perform scoring or relevance,
-so all results receive a neutral score of `1`.
+<1> 因为 `term` 查询放在 `filter` 条件中，不会进行相关性评分计算，并对结果中所有文档都给予一个中性评分 `1` 。
 
-==== term Query with Text
 
-As mentioned at the top of ((("structured search", "finding exact values", "using term filter with text")))
-((("term filter", "with text")))this section, the `term` query can match strings
-just as easily as numbers.  Instead of price, let's try to find products that
-have a certain UPC identification code. To do this with SQL, we might use a
-query like this:
+==== 过滤文本
+
+如本部分开始处提到过的一样 ((("structured search", "finding exact values", "using term filter with text")))
+((("term filter", "with text")))，使用 `term` 过滤器匹配字符串
+和匹配数字一样容易。如果我们想要查询某个具体 UPC ID 的产品，使用 SQL 表达式
+会是如下这样：
 
 [source,sql]
 --------------------------------------------------
@@ -120,8 +112,7 @@ FROM   products
 WHERE  productID = "XHDK-A-1293-#fJ3"
 --------------------------------------------------
 
-Translated into the query DSL, we can try a similar query with the `term`
-filter, like so:
+转换成查询表达式（query DSL），同样使用 `term` 过滤器，形式如下：
 
 [source,js]
 --------------------------------------------------
@@ -140,10 +131,10 @@ GET /my_store/products/_search
 --------------------------------------------------
 // SENSE: 080_Structured_Search/05_Term_text.json
 
-Except there is a little hiccup: we don't get any results back!  Why is
-that? The problem isn't with the `term` query; it is with the way
-the data has been indexed. ((("analyze API, using to understand tokenization"))) If we use the `analyze` API (<<analyze-api>>), we
-can see that our UPC has been tokenized into smaller tokens:
+但这里有个小问题：我们无法获得期望的结果。为什么
+呢？问题不在 `term` 查询，而在于
+索引数据的方式。 ((("analyze API, using to understand tokenization"))) 如果我们使用 `analyze` （分析）API (<<analyze-api, 分析 API>>)，我们
+可以看到这里的 UPC 码被拆分成多个小标记（token）：
 
 [source,js]
 --------------------------------------------------
@@ -187,24 +178,23 @@ GET /my_store/_analyze
 --------------------------------------------------
 // SENSE: 080_Structured_Search/05_Term_text.json
 
-There are a few important points here:
+这里有几点需要注意：
 
-* We have four distinct tokens instead of a single token representing the UPC.
-* All letters have been lowercased.
-* We lost the hyphen and the hash (`#`) sign.
+* Elasticsearch 用4个不同的标记（token）而不是单个标记（token）来表示这个UPC。
+* 所有字母都是小写的。
+* 丢失了连字符和哈希符（ `#` ）。
 
-So when our `term` query looks for the exact value `XHDK-A-1293-#fJ3`, it
-doesn't find anything, because that token does not exist in our inverted index.
-Instead, there are the four tokens listed previously.
+所以当我们用 `term` 过滤器去查找精确值 `XHDK-A-1293-#fJ3` 的时候，
+找不到任何文档，因为它并不在我们的倒排索引（inverted index）中，
+正如前面呈现出的分析结果，索引里有四个标记（tokens）。
 
-Obviously, this is not what we want to happen when dealing with identification
-codes, or any kind of precise enumeration.
+显然这种对 ID 码或其他任何精确值的处理方式并不是我们想要的。
 
-To prevent this from happening, we need to tell Elasticsearch that this field
-contains an exact value by  setting it to be `not_analyzed`.((("not_analyzed string fields"))) We saw this
-originally in <<custom-field-mappings>>.  To do this, we need to first delete
-our old index (because it has the incorrect mapping) and create a new one with
-the correct mappings:
+为了避免这种问题，我们需要告诉 Elasticsearch 该字段
+具有精确值，要将其设置成 `not_analyzed` （未分析的）。((("not_analyzed string fields"))) 我们可以
+在 <<custom-field-mappings, 自定义字段映射>> 中查看它的用法。为了修正搜索结果，我们需要首先删除
+旧索引（因为它的映射不再正确）然后创建一个
+能正确映射的新索引：
 
 [source,js]
 --------------------------------------------------
@@ -226,12 +216,11 @@ PUT /my_store <2>
 }
 --------------------------------------------------
 // SENSE: 080_Structured_Search/05_Term_text.json
-<1> Deleting the index first is required, since we cannot change mappings that
-    already exist.
-<2> With the index deleted, we can re-create it with our custom mapping.
-<3> Here we explicitly say that we don't want `productID` to be analyzed.
+<1> 删除索引是必须的，因为我们不能更新已存在的映射。
+<2> 在索引被删除后，我们可以创建新的索引并为其指定自定义映射。
+<3> 这里我们告诉 Elasticsearch ，我们不想对 `productID` 做任何分析。
 
-Now we can go ahead and reindex our documents:
+现在我们可以重新为文档进行索引：
 
 [source,js]
 --------------------------------------------------
@@ -247,9 +236,9 @@ POST /my_store/products/_bulk
 --------------------------------------------------
 // SENSE: 080_Structured_Search/05_Term_text.json
 
-Only now will our `term` query work as expected.  Let's try it again on the
-newly indexed data (notice, the query and filter have not changed at all, just
-how the data is mapped):
+此时， `term` 过滤器就能搜索到我们想要的结果，让我们再次搜索
+新索引过的数据（注意，查询和过滤并没有发生任何改变，改变的是
+数据映射的方式）：
 
 [source,js]
 --------------------------------------------------
@@ -268,58 +257,42 @@ GET /my_store/products/_search
 --------------------------------------------------
 // SENSE: 080_Structured_Search/05_Term_text.json
 
-Since the `productID` field is not analyzed, and the `term` query performs no
-analysis, the query finds the exact match and returns document 1 as a hit.
-Success!
+因为 `productID` 字段是未分析过的， `term` 过滤器不会对其做任何
+分析，查询会进行精确查找并返回文档 1 。
+成功！
 
 [[_internal_filter_operation]]
-==== Internal Filter Operation
+==== 过滤器内部操作
 
-Internally, Elasticsearch is((("structured search", "finding exact values", "intrnal filter operations")))
-((("filters", "internal filter operation"))) performing several operations when executing a
-non-scoring query:
+在内部，Elasticsearch ((("structured search", "finding exact values", "intrnal filter operations")))
+((("filters", "internal filter operation")))会在过滤的时候执行多个操作：
 
-1. _Find matching docs_.
+1. _查找匹配文档_ 。
 +
-The `term` query looks up the term `XHDK-A-1293-#fJ3` in the inverted index
-and retrieves the list of documents that contain that term.  In this case,
-only document 1 has the term we are looking for.
+`term` 过滤器在倒排索引中查找 `XHDK-A-1293-#fJ3`
+然后获取包含该词项（term）的所有文档。本例中，
+只有文档 1 满足我们要求。
 
-2. _Build a bitset_.
+2. _构建位集（bitset）_ 。
 +
-The filter then builds a _bitset_--an array of 1s and 0s--that
-describes which documents contain the term.  Matching documents receive a  `1`
-bit.  In our example, the bitset would be `[1,0,0,0]`.  Internally, this is represented
-as a https://www.elastic.co/blog/frame-of-reference-and-roaring-bitmaps["roaring bitmap"],
-which can efficiently encode both sparse and dense sets.
+过滤器会创建一个 _位集（bitset）_ （一个包含 0 和 1 的数组），它
+描述了哪个文档会包含该词项（term）。匹配文档的标志位是 1 。
+本例中，位集的值为 `[1,0,0,0]` ，内部使用的是 https://www.elastic.co/blog/frame-of-reference-and-roaring-bitmaps["roaring bitmap"] ，对稀疏和密集的集合都能有效编码。
 
-3. _Iterate over the bitset(s)_
+3. _迭代位集（bitset）_ 。
 +
-Once the bitsets are generated for each query, Elasticsearch iterates over the
-bitsets to find the set of matching documents that satisfy all filtering criteria.
-The order of execution is decided heuristically, but generally the most sparse
-bitset is iterated on first (since it excludes the largest number of documents).
+因为位集是按每次查询生成的，Elasticsearch 会对它们进行迭代来找到满足所有过滤条件的文档集合。
+迭代的顺序也是启发探索式的，但是一般来说会先迭代最稀疏的位集（因为能排除最多的文档）。
 
-4. _Increment the usage counter_.
+4. _使用计算器自增（bitset）_ 。
 +
-Elasticsearch can cache non-scoring queries for faster access, but its silly to
-cache something that is used only rarely.  Non-scoring queries are already quite fast
-due to the inverted index, so we only want to cache queries we _know_ will be used
-again in the future to prevent resource wastage.
-+
-To do this, Elasticsearch tracks the history of query usage on a per-index basis.
-If a query is used more than a few times in the last 256 queries, it is cached
-in memory.  And when the bitset is cached, caching is omitted on segments that have
-fewer than 10,000 documents (or less than 3% of the total index size). These
-small segments tend to disappear quickly anyway and it is a waste to associate a
-cache with them.
+Elasticsearch 可以缓存不需要评分的查询以便快速访问，但是不常用的查询如果也缓存就有点傻了。
+非评分查询本来就已经很快了，所以我们是只希望缓存哪些以后还会被再次用到的查询来避免浪费资源。
 
+要实现这个，Elasticsearch 会基于索引来跟踪查询使用的历史信息。
+Elasticsearch 会在内存里面保留常用的 256 个查询，当位集被缓存之后，文档数少于 10,000 的段文件（小于总索引大小的3%）缓存会被自动忽略。
+这些小段一般会倾向于很快消失，所以和缓存关联只会是浪费资源。
 
-Although not quite true in reality (execution is a bit more complicated based on
-how the query planner re-arranges things, and some heuristics based on query cost),
-you can conceptually think of non-scoring queries as executing _before_ the scoring
-queries.  The job of non-scoring queries is to reduce the number of documents that
-the more costly scoring queries need to evaluate, resulting in a faster search request.
+尽管事实上不一定是真的，但你可以理论上认为不用评分的查询要比需要评分的查询先执行，非评分查询的任务就是为了减少后面较耗资源的查询所需要参与的文档数量，从而产生比较快的查询。
 
-By conceptually thinking of non-scoring queries as executing first, you'll be
-equipped to write efficient and fast search requests.
+在理论上意识到非评分查询会首先执行，你将编写出高效和快速的搜索请求。
